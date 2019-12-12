@@ -2,15 +2,7 @@ SHELL = /bin/sh
 
 include conf/configure.fv3
 
-ifeq ($(strip $(FMS_DIR)),)
-  FMS_DIR=$(realpath ../FMS/FMS_INSTALL)
-endif
-
-exist=$(wildcard $(FMS_DIR))
-ifeq ($(strip $(exist)),)
-  $(error ERROR: FMS_DIR variable is unset and FMS_INSTALL is not in ../FMS/FMS_INSTALL )
-endif
-
+FMS_DIR=${PWD}/fms
 ifeq ($(NAM_phys),Y)
   PHYSP  = nam
 else
@@ -39,6 +31,7 @@ nems: libs
 
 ifneq (,$(findstring CCPP,$(CPPDEFS)))
 libs:
+	$(MAKE) -C fms                 $(MAKE_OPTS) 
 	$(MAKE) -C cpl                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
 	$(MAKE) -C $(PHYSP)physics     $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  DYN32=$(DYN32) # force gfs physics to 64bit, flag to CCPP build for 32bit dynamics
 	$(MAKE) -C ccpp/driver         $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  DYN32=$(DYN32) # force gfs physics to 64bit, flag to CCPP build for 32bit dynamics
@@ -52,6 +45,7 @@ $(FV3_EXE): atmos_model.o coupler_main.o ccpp/driver/libccppdriver.a atmos_cubed
 
 else
 libs:
+	$(MAKE) -C fms                 $(MAKE_OPTS) 
 	$(MAKE) -C cpl                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
 	$(MAKE) -C $(PHYSP)physics     $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
 	$(MAKE) -C ipd                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
