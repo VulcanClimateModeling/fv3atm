@@ -58,7 +58,6 @@ FFLAGS_OPT = -O2
 FFLAGS_REPRO = -O2 -g -fbacktrace
 FFLAGS_DEBUG = -O0 -g -fbacktrace -fno-fast-math -ffree-line-length-none -fno-backslash -pedantic -Waliasing -Wampersand -Wline-truncation -Wsurprising -Wtabs -Wunderflow -fdump-core -ffpe-trap=invalid,zero,overflow -fbounds-check -finit-real=nan -finit-integer=9999999 -finit-logical=true -finit-character=35
 
-TRANSCENDENTALS := -fast-transcendentals
 FFLAGS_OPENMP = -fopenmp
 FFLAGS_VERBOSE = -v -V -what
 
@@ -76,22 +75,19 @@ LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
 # start with blank LIBS
 LIBS := -lgfortran
 
+FAST :=
 ifneq ($(REPRO),)
 CFLAGS += $(CFLAGS_REPRO)
 FFLAGS += $(FFLAGS_REPRO)
-FAST :=
 else ifneq ($(DEBUG),)
 CFLAGS += $(CFLAGS_DEBUG)
 FFLAGS += $(FFLAGS_DEBUG)
-FAST :=
 else ifneq ($(TEST),)
 CFLAGS += $(CFLAGS_TEST)
 FFLAGS += $(FFLAGS_TEST)
-FAST :=
 else
 CFLAGS += $(CFLAGS_OPT)
 FFLAGS += $(FFLAGS_OPT)
-FAST := $(TRANSCENDENTALS)
 endif
 
 ifneq ($(OPENMP),)

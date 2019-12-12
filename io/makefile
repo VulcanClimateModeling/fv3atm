@@ -14,11 +14,10 @@ else
     $(info Build standalone FV3 io ...)
     $(info )
 endif
-$(info $$ESMF_INC is [${ESMF_INC}])
 
 LIBRARY  = libfv3io.a
 
-FFLAGS   += -I$(FMS_DIR) -I../gfsphysics -I../ipd -I../namphysics
+FFLAGS   += -I$(FMS_DIR) -I../$(PHYSP)physics -I../ipd 
 
 ifneq (,$(findstring NO_INLINE_POST,$(CPPDEFS)))
 POST_SRC = \
@@ -37,13 +36,13 @@ SRCS_F   =
 
 SRCS_F90 = \
 		   ./ffsync.F90                        \
-		   ./FV3GFS_io.F90                     \
-		   $(POST_SRC)                         \
-		   ./module_write_nemsio.F90           \
-		   ./module_write_netcdf.F90           \
-		   ./module_fv3_io_def.F90             \
-		   ./module_write_internal_state.F90   \
-		   ./module_wrt_grid_comp.F90
+		   ./FV3GFS_io.F90                     
+#		   $(POST_SRC)                         \
+#		   ./module_write_nemsio.F90           \
+#		   ./module_write_netcdf.F90           \
+#		   ./module_fv3_io_def.F90             \
+#		   ./module_write_internal_state.F90   \
+#		   ./module_wrt_grid_comp.F90
 
 SRCS_c   = 
 
