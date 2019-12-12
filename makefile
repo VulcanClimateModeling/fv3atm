@@ -22,7 +22,7 @@ endif
 FV3_EXE  = fv3.exe
 FV3CAP_LIB  = libfv3cap.a
 
-all: libs
+all: libs 
 	$(MAKE) $(FV3_EXE) $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
 
 nems: libs
@@ -46,14 +46,14 @@ $(FV3_EXE): atmos_model.o coupler_main.o ccpp/driver/libccppdriver.a atmos_cubed
 else
 libs:
 	$(MAKE) -C fms                 $(MAKE_OPTS) 
-#	$(MAKE) -C cpl                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
+	$(MAKE) -C cpl                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
 	$(MAKE) -C $(PHYSP)physics     $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
 	$(MAKE) -C ipd                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
 	$(MAKE) -C io                  $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) PHYSP=$(PHYSP)
 	$(MAKE) -C atmos_cubed_sphere  $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) PHYSP=$(PHYSP)
-	$(MAKE) -C stochastic_physics  $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
+	$(MAKE) -C stochastic_physics  $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) PHYSP=$(PHYSP) 32BIT=N  # force gfs physics to 64bit
 
-$(FV3_EXE): atmos_model.o coupler_main.o atmos_cubed_sphere/libfv3core.a io/libfv3io.a ipd/libipd.a $(PHYSP)physics/lib$(PHYSP)phys.a ../stochastic_physics/libstochastic_physics.a cpl/libfv3cpl.a fms/libfms.a 
+$(FV3_EXE): module_fv3_config.o atmos_model.o coupler_main.o atmos_cubed_sphere/libfv3core.a io/libfv3io.a ipd/libipd.a $(PHYSP)physics/lib$(PHYSP)phys.a stochastic_physics/libstochastic_physics.a fms/libfms.a 
 	$(LD) -o $@ $^ $(NCEPLIBS) $(LDFLAGS)
 endif
 
@@ -61,7 +61,7 @@ $(FV3CAP_LIB): atmos_model.o module_fv3_config.o module_fcst_grid_comp.o time_ut
 	ar rv $(FV3CAP_LIB) $?
 
 atmos_model.o : atmos_model.F90
-	$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(ESMF_INC) -c atmos_model.F90
+	$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) -I./cpl $(OTHERFLAGS) $(OTHER_FFLAGS) $(ESMF_INC) -c atmos_model.F90 
 
 module_fv3_config.o: module_fv3_config.F90
 	$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(ESMF_INC) -c module_fv3_config.F90
@@ -71,6 +71,8 @@ time_utils.o: time_utils.F90
 	$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(ESMF_INC) -c time_utils.F90
 fv3_cap.o: fv3_cap.F90
 	$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(ESMF_INC) -c fv3_cap.F90
+%.o: %.F90
+	$(FC) $(CPPDEFS) $(CPPFLAGS) $(FPPFLAGS) $(FFLAGS) $(OTHERFLAGS) $(OTHER_FFLAGS) $(ESMF_INC) -c $< -o $@
 
 DEPEND_FILES = time_utils.F90 module_fv3_config.F90 atmos_model.F90 module_fcst_grid_comp.F90 fv3_cap.F90 coupler_main.F90
 
@@ -141,10 +143,10 @@ clean:
 	(cd $(PHYSP)physics     && make clean)
 	(cd ccpp/driver         && make clean)
 	(cd ipd                 && make clean)
-	(cd ../stochastic_physics  && make clean)
+	(cd stochastic_physics  && make clean)
 	(cd io                  && make clean)
 	(cd atmos_cubed_sphere  && make clean)
-	(cd cpl                 && make clean)
+	(cd fms                 && make clean)
 	$(RM) -f $(FV3_EXE) $(FV3CAP_LIB) *.o *.mod *.i90 *.lst depend
 
 cleanall: clean
