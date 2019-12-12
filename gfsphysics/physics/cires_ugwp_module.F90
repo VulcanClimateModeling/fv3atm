@@ -72,6 +72,8 @@ module  cires_ugwp_module
 ! knob_ugwp_doheat=1
 ! knob_ugwp_dokdis=0
 ! knob_ugwp_ndx4lh=4
+! knob_ugwp_version=0
+!launch_level=55
 !/
 !
 ! allocatable arrays, initilized during "cires_ugwp_init" &
