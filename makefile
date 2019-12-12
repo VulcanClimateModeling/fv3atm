@@ -46,7 +46,7 @@ $(FV3_EXE): atmos_model.o coupler_main.o ccpp/driver/libccppdriver.a atmos_cubed
 else
 libs:
 	$(MAKE) -C fms                 $(MAKE_OPTS) 
-	$(MAKE) -C cpl                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
+#	$(MAKE) -C cpl                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
 	$(MAKE) -C $(PHYSP)physics     $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
 	$(MAKE) -C ipd                 $(MAKE_OPTS) FMS_DIR=$(FMS_DIR) 32BIT=N  # force gfs physics to 64bit
 	$(MAKE) -C io                  $(MAKE_OPTS) FMS_DIR=$(FMS_DIR)
