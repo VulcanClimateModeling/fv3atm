@@ -1,0 +1,112 @@
+
+############
+# commands #
+############
+FC = ftn 
+CC = cc
+LD = $(FC) 
+
+#########
+# flags #
+#########
+# default is 32-bit non-hydrostatic build using AVX2 and no OpenMP support
+DEBUG =
+REPRO =
+VERBOSE =
+OPENMP =
+AVX2 = Y
+HYDRO = N
+
+NEMSIOINC = -I${NCEPLIBS_DIR}/include
+NCEPLIBS = -L${NCEPLIBS_DIR}/lib -lnemsio_d -lbacio_4 -lsp_v2.0.2_d -lw3emc_d -lw3nco_d
+
+##############################################
+# Need to use at least GNU Make version 3.81 #
+##############################################
+need := 3.81
+ok := $(filter $(need),$(firstword $(sort $(MAKE_VERSION) $(need))))
+ifneq ($(need),$(ok))
+$(error Need at least make version $(need).  Load module gmake/3.81)
+endif
+
+INCLUDE = -I$(NETCDF_DIR)/include
+
+FPPFLAGS := -cpp -Wp,-w $(INCLUDE) -fPIC
+CFLAGS := $(INCLUDE) -fPIC
+
+FFLAGS := $(INCLUDE) -fno-alias -auto -safe-cray-ptr -ftz -assume byterecl -nowarn -sox -align array64byte -i4 -qno-opt-dynamic-align  
+
+CPPDEFS += -Duse_libMPI -Duse_netCDF -DSPMD -DUSE_LOG_DIAG_FIELD_INFO -DUSE_GFSL63 -DGFS_PHYS 
+CPPDEFS += -DNEW_TAUCTMAX -DINTERNAL_FILE_NML
+
+ifneq ($(HYDRO),Y)
+CPPDEFS += -DMOIST_CAPPA -DUSE_COND
+endif
+
+ifeq ($(32BIT),Y)
+CPPDEFS += -DOVERLOAD_R4 -DOVERLOAD_R8
+FFLAGS += -real-size 32
+else
+FFLAGS += -real-size 64 -no-prec-div -no-prec-sqrt
+endif
+
+ifeq ($(AVX2),Y)
+FFLAGS += -xCORE-AVX2 
+CFLAGS += -xCORE-AVX2 
+else
+FFLAGS += -xHOST  
+CFLAGS += -xHOST  
+endif
+
+FFLAGS_OPT = -O2 -debug minimal -fp-model source -qoverride-limits -qopt-prefetch=3 
+FFLAGS_REPRO = -O2 -g -debug minimal -fp-model source -qoverride-limits -traceback
+FFLAGS_DEBUG = -g -O0 -check -check noarg_temp_created -check nopointer -warn -warn noerrors -fp-stack-check -fstack-protector-all -fpe0 -debug -traceback -ftrapuv
+TRANSCENDENTALS := -fast-transcendentals
+FFLAGS_OPENMP = -qopenmp
+FFLAGS_VERBOSE = -v -V -what
+
+CFLAGS += -D__IFC -sox -fp-model source
+
+CFLAGS_OPT = -O2 -debug minimal
+CFLAGS_REPRO = -O2 -debug minimal
+CFLAGS_OPENMP = -qopenmp
+CFLAGS_DEBUG = -O0 -g -ftrapuv -traceback
+
+LDFLAGS :=
+LDFLAGS_OPENMP := -qopenmp
+LDFLAGS_VERBOSE := -Wl,-V,--verbose,-cref,-M
+
+# start with blank LIBS
+LIBS := 
+
+FAST :=
+ifneq ($(REPRO),)
+CFLAGS += $(CFLAGS_REPRO)
+FFLAGS += $(FFLAGS_REPRO)
+else ifneq ($(DEBUG),)
+CFLAGS += $(CFLAGS_DEBUG)
+FFLAGS += $(FFLAGS_DEBUG)
+else ifneq ($(TEST),)
+CFLAGS += $(CFLAGS_TEST)
+FFLAGS += $(FFLAGS_TEST)
+else
+CFLAGS += $(CFLAGS_OPT)
+FFLAGS += $(FFLAGS_OPT)
+FAST := $(TRANSCENDENTALS)
+endif
+
+ifneq ($(OPENMP),)
+CFLAGS += $(CFLAGS_OPENMP)
+FFLAGS += $(FFLAGS_OPENMP)
+LDFLAGS += $(LDFLAGS_OPENMP)
+endif
+
+ifneq ($(VERBOSE),)
+CFLAGS += $(CFLAGS_VERBOSE)
+FFLAGS += $(FFLAGS_VERBOSE)
+LDFLAGS += $(LDFLAGS_VERBOSE)
+endif
+
+LIBS += -lnetcdff -lnetcdf
+
+LDFLAGS += $(LIBS) -llapack -lblas

@@ -9,18 +9,18 @@ if [[ ! -f conf/configure.fv3 ]]; then
     ./configure
 fi
 
-if [[ -f conf/modules.fv3 ]]; then
-    echo -n "Loading modules .... "
-    source conf/modules.fv3
-    echo "done."
-    echo
-fi
+#if [[ -f conf/modules.fv3 ]]; then
+#    echo -n "Loading modules .... "
+#    source conf/modules.fv3
+#    echo "done."
+#    echo
+#fi
 
 set -x
 
 echo "Running make" "$@"
 
- make -j 8 "$@"
+#make -j 8 "$@"
 
 #make clean
 #make -j 8 "$@"
@@ -31,8 +31,8 @@ echo "Running make" "$@"
 #mv fv3.exe fv3_hydro.exe
 
 #make clean
-#make -j 8 32BIT=Y "$@"
-#mv fv3.exe fv3_32bit.exe
+make -j 8 32BIT=Y "$@"
+mv fv3.exe fv3_32bit.exe
 
 #make clean
 #make -j 8 DEBUG=Y "$@"
